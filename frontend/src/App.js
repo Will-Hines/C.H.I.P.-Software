@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import robotImage from "./assets/CHIPlogo.png";
 
 function App() {
   const [data, setData] = useState([]);
+  const [activeTab, setActiveTab] = useState("home");
 
   const fetchData = async () => {
     try {
@@ -10,7 +12,7 @@ function App() {
         "https://c-h-i-p-software.onrender.com/robot-data"
       );
       const result = await response.json();
-      setData(result.reverse()); // newest first
+      setData(result.reverse());
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -18,87 +20,73 @@ function App() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000); // auto refresh every 3 sec
+    const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, []);
 
   const latest = data.length > 0 ? data[0] : null;
 
   return (
-    <div className="container">
-      <h1>🤖 Robot Telemetry Dashboard</h1>
-
-      {latest && (
-        <div className="status-card">
-          <h2>Latest Status (Robot {latest.robot_id})</h2>
-          <div className="status-grid">
-            <div>
-              <span className="label">Battery:</span>
-              <span
-                className={
-                  latest.battery < 30 ? "value danger" : "value good"
-                }
-              >
-                {latest.battery}%
-              </span>
-            </div>
-
-            <div>
-              <span className="label">Temperature:</span>
-              <span className="value">{latest.temperature}°C</span>
-            </div>
-
-            <div>
-              <span className="label">Speed:</span>
-              <span className="value">{latest.speed}</span>
-            </div>
-
-            <div>
-              <span className="label">Timestamp:</span>
-              <span className="value">
-                {new Date(latest.timestamp).toLocaleString()}
-              </span>
-            </div>
-          </div>
+    <div className="app">
+      {/* HEADER */}
+      <header className="header">
+        <div className="logo-title">
+          <img src={robotImage} alt="C.H.I.P." className="logo" />
+          <span className="title">C.H.I.P.</span>
         </div>
-      )}
 
-      <h2>Telemetry History</h2>
+        <nav className="tabs">
+          <button onClick={() => setActiveTab("home")}>
+            Home
+          </button>
+          <button onClick={() => setActiveTab("map")}>
+            Map
+          </button>
+          <button onClick={() => setActiveTab("alerts")}>
+            Alert History
+          </button>
+        </nav>
+      </header>
 
-      {data.length === 0 ? (
-        <p>No data yet</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Robot ID</th>
-              <th>Battery (%)</th>
-              <th>Temperature (°C)</th>
-              <th>Speed</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index}>
-                <td>{item.robot_id}</td>
-                <td
-                  className={
-                    item.battery < 30 ? "danger-text" : ""
-                  }
-                >
-                  {item.battery}
-                </td>
-                <td>{item.temperature}</td>
-                <td>{item.speed}</td>
-                <td>
-                  {new Date(item.timestamp).toLocaleString()}
-                </td>
-              </tr>
+      {/* TAB CONTENT */}
+      <div className="content">
+        {activeTab === "home" && (
+          <div>
+            <h2>System Overview</h2>
+            {latest && (
+              <div className="status-card">
+                Latest Robot {latest.robot_id} Status
+                <br />
+                Battery: {latest.battery}%
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "map" && (
+          <div>
+            <h2>Map of Facility</h2>
+            <img
+              src={robotImage}
+              alt="Map"
+              className="map-image"
+            />
+          </div>
+        )}
+
+        {activeTab === "alerts" && (
+          <div>
+            <h2>Alert History</h2>
+            {data.slice(0, 10).map((item, i) => (
+              <div key={i} className="alert-item">
+                {new Date(item.timestamp).toLocaleString()} :
+                Battery {item.battery}%
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        )}
+        
+      </div>
     </div>
   );
 }
