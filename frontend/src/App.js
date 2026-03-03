@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import robotImage from "./assets/CHIPlogo.png";
+import mapImage from "./assets/facility_map_example.png";
 
 function App() {
   const [data, setData] = useState([]);
@@ -67,7 +68,7 @@ function App() {
           <div>
             <h2>Map of Facility</h2>
             <img
-              src={robotImage}
+              src={mapImage}
               alt="Map"
               className="map-image"
             />
