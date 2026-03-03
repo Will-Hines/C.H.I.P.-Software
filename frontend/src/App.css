@@ -22,6 +22,7 @@
 .title {
   font-size: 24px;
   font-weight: bold;
+  color: white;
 }
 
 /* TABS */
@@ -50,6 +51,7 @@
   margin-bottom: 10px;
   background: #183b5f;
   border-radius: 6px;
+  color: white;
 }
 
 .alert-item.past {
@@ -62,10 +64,11 @@
   background: #112f4f;
   padding: 15px;
   border-radius: 8px;
+  color: white;
 }
 
 /* MAP */
 .map-image {
-  width: 400px;
+  width: 700px;
   margin-top: 20px;
 }
