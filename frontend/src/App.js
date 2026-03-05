@@ -6,6 +6,7 @@ import mapImage from "./assets/facility_map_example.png";
 function App() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
+  const [showAlert, setShowAlert] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -60,6 +61,24 @@ function App() {
                 <br />
                 Battery: {latest.battery}%
               </div>
+            )}
+
+            <h2>Current Alerts</h2>
+
+            {showAlert ? (
+              <div className="new-alert-card">
+                <span
+                  className="close-alert"
+                  onClick={() => setShowAlert(false)}
+                  aria-label="Dismiss alert"
+                  title="Dismiss"
+                >
+                  ×
+                </span>
+                Spill Detected!!!!!
+              </div>
+            ) : (
+              <div className="alert-item past">No current alerts.</div>
             )}
           </div>
         )}
