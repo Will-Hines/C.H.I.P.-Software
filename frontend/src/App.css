@@ -67,6 +67,32 @@
   color: white;
 }
 
+/* New Alert */
+.new-alert-card {
+  margin-top: 20px;
+  background: red;
+  padding: 15px;
+  padding-right: 40px;
+  border-radius: 8px;
+  color: white;
+  position: relative;
+}
+
+/* Close button */
+.close-alert {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.close-alert:hover {
+  opacity: 0.8;
+}
+
 /* MAP */
 .map-image {
   width: 700px;
