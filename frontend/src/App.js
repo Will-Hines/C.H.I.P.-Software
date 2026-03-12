@@ -7,6 +7,7 @@ function App() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
   const [showAlert, setShowAlert] = useState(true);
+  const [alertHistory, setAlertHistory] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -32,6 +33,26 @@ function App() {
   }, []);
 
   const latest = data.length > 0 ? data[0] : null;
+
+  const dismissAlert = () => {
+    if (!latest) return;
+
+    const newAlert = {
+      id: latest.timestamp,
+      message: "Spill Detected!",
+      timestamp: latest.timestamp,
+      robot_id: latest.robot_id,
+      battery: latest.battery,
+    };
+
+    setAlertHistory((prev) => {
+      const alreadyExists = prev.some((alert) => alert.id === newAlert.id);
+      if (alreadyExists) return prev;
+      return [newAlert, ...prev];
+    });
+
+    setShowAlert(false);
+  };
 
   return (
     <div className="app">
@@ -72,7 +93,7 @@ function App() {
                 <div className="new-alert-card">
                   <span
                     className="close-alert"
-                    onClick={() => setShowAlert(false)}
+                    onClick={dismissAlert}
                     aria-label="Dismiss alert"
                     title="Dismiss"
                   >
@@ -101,11 +122,16 @@ function App() {
         {activeTab === "alerts" && (
           <div>
             <h2>Alert History</h2>
-            {data.length > 0 ? (
-              data.slice(0, 10).map((item, i) => (
-                <div key={i} className="alert-item">
-                  {new Date(item.timestamp).toLocaleString()} : Battery{" "}
-                  {item.battery}%
+            {alertHistory.length > 0 ? (
+              alertHistory.map((alert) => (
+                <div key={alert.id} className="alert-item">
+                  <strong>{alert.message}</strong>
+                  <br />
+                  Timestamp: {new Date(alert.timestamp).toLocaleString()}
+                  <br />
+                  Robot: {alert.robot_id}
+                  <br />
+                  Battery: {alert.battery}%
                 </div>
               ))
             ) : (
