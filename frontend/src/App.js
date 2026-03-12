@@ -13,8 +13,13 @@ function App() {
       const response = await fetch(
         "https://c-h-i-p-software.onrender.com/robot-data"
       );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch robot data");
+      }
+
       const result = await response.json();
-      setData(result.reverse());
+      setData(Array.isArray(result) ? [...result].reverse() : []);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -30,7 +35,6 @@ function App() {
 
   return (
     <div className="app">
-      {/* HEADER */}
       <header className="header">
         <div className="logo-title">
           <img src={robotImage} alt="C.H.I.P." className="logo" />
@@ -38,47 +42,51 @@ function App() {
         </div>
 
         <nav className="tabs">
-          <button onClick={() => setActiveTab("home")}>
-            Home
-          </button>
-          <button onClick={() => setActiveTab("map")}>
-            Map
-          </button>
-          <button onClick={() => setActiveTab("alerts")}>
-            Alert History
-          </button>
+          <button onClick={() => setActiveTab("home")}>Home</button>
+          <button onClick={() => setActiveTab("map")}>Map</button>
+          <button onClick={() => setActiveTab("alerts")}>Alert History</button>
         </nav>
       </header>
 
-      {/* TAB CONTENT */}
       <div className="content">
         {activeTab === "home" && (
           <div>
             <h2>System Overview</h2>
-            {latest && (
+
+            {latest ? (
               <div className="status-card">
-                Latest Robot {latest.robot_id} Status
+                <strong>Latest Robot {latest.robot_id} Status</strong>
+                <br />
+                Timestamp: {new Date(latest.timestamp).toLocaleString()}
                 <br />
                 Battery: {latest.battery}%
               </div>
+            ) : (
+              <div className="status-card">Loading robot data...</div>
             )}
 
             <h2>Current Alerts</h2>
 
-            {showAlert ? (
-              <div className="new-alert-card">
-                <span
-                  className="close-alert"
-                  onClick={() => setShowAlert(false)}
-                  aria-label="Dismiss alert"
-                  title="Dismiss"
-                >
-                  ×
-                </span>
-                Spill Detected!!!!!
-              </div>
+            {latest ? (
+              showAlert ? (
+                <div className="new-alert-card">
+                  <span
+                    className="close-alert"
+                    onClick={() => setShowAlert(false)}
+                    aria-label="Dismiss alert"
+                    title="Dismiss"
+                  >
+                    ×
+                  </span>
+                  <strong>Spill Detected!</strong>
+                  <br />
+                  Timestamp: {new Date(latest.timestamp).toLocaleString()}
+                </div>
+              ) : (
+                <div className="alert-item past">No current alerts.</div>
+              )
             ) : (
-              <div className="alert-item past">No current alerts.</div>
+              <div className="alert-item past">Loading alerts...</div>
             )}
           </div>
         )}
@@ -86,26 +94,25 @@ function App() {
         {activeTab === "map" && (
           <div>
             <h2>Map of Facility</h2>
-            <img
-              src={mapImage}
-              alt="Map"
-              className="map-image"
-            />
+            <img src={mapImage} alt="Facility Map" className="map-image" />
           </div>
         )}
 
         {activeTab === "alerts" && (
           <div>
             <h2>Alert History</h2>
-            {data.slice(0, 10).map((item, i) => (
-              <div key={i} className="alert-item">
-                {new Date(item.timestamp).toLocaleString()} :
-                Battery {item.battery}%
-              </div>
-            ))}
+            {data.length > 0 ? (
+              data.slice(0, 10).map((item, i) => (
+                <div key={i} className="alert-item">
+                  {new Date(item.timestamp).toLocaleString()} : Battery{" "}
+                  {item.battery}%
+                </div>
+              ))
+            ) : (
+              <div className="alert-item past">No alert history available.</div>
+            )}
           </div>
         )}
-        
       </div>
     </div>
   );
