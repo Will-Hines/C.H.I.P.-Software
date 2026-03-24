@@ -122,9 +122,16 @@ class IntegratedMover(Node):
             self.get_logger().info("Wall cleared → RESUME")
 
     # -----------------------------
-    # MONGO LOGGING (with COLOR image)
+    # BACKEND LOGGING (with COLOR image)
     # -----------------------------
     def log_to_backend(self):
+        data = {
+            "robot_id": "R1",
+            "battery" : 0,              # TODO: Dynamically get the battery
+            "loacation" : 0,            # TODO: Dynamically get the location
+            "image_url" : image_url
+        }
+            
         response = requests.post(url, json=data)
 
     # -----------------------------
