@@ -27,12 +27,9 @@ COLOR_TOPIC = "/camera/camera/color/image_raw"
 THRESHOLD = 0.5  # meters
 
 # -----------------------------
-# MONGO CONFIG
+# BACKEND CONFIG
 # -----------------------------
-uri = "mongodb+srv://db_user:mongo@spill-detection-cluster.tfmvn7s.mongodb.net/?appName=spill-detection-cluster"
-client = MongoClient(uri)
-db = client["spill-detection-cluster"]
-mycol = db["Test"]
+uri = "https://c-h-i-p-software.onrender.com/robot-data"
 
 
 class IntegratedMover(Node):
@@ -127,36 +124,8 @@ class IntegratedMover(Node):
     # -----------------------------
     # MONGO LOGGING (with COLOR image)
     # -----------------------------
-    def log_to_mongo(self):
-        if self.mongo_logged:
-            return
-
-        try:
-            client.admin.command('ping')
-
-            img_b64 = None
-            if self.latest_color is not None:
-                # Save to Pi
-                timestamp = int(time.time())
-                filename = f"/home/chip/captured_{timestamp}.jpg"
-                cv2.imwrite(filename, self.latest_color)
-                self.get_logger().info(f"Saved image to {filename}")
-
-                # Encode for MongoDB
-                _, jpeg = cv2.imencode(".jpg", self.latest_color)
-                img_b64 = base64.b64encode(jpeg.tobytes()).decode("utf-8")
-            doc = {
-                "trigger": True,
-                "timestamp": time.time(),
-                "color_image_jpeg_base64": img_b64
-            }
-
-            mycol.insert_one(doc)
-            self.get_logger().info("MongoDB document inserted (with COLOR image).")
-            self.mongo_logged = True
-
-        except Exception as e:
-            self.get_logger().error(f"MongoDB error: {e}")
+    def log_to_backend(self):
+        response = requests.post(url, json=data)
 
     # -----------------------------
     # CLEANUP
