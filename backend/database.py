@@ -8,4 +8,4 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 
 db = client["spill-detection-cluster"]            # database name
-collection = db["telemetry"]       # collection for robot data
+collection = db["Test"]       # collection for robot data
