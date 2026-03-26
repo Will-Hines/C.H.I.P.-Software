@@ -13,6 +13,11 @@ from cv_bridge import CvBridge
 from pymongo import MongoClient
 import base64
 
+# Image handling and uploading
+import boto3
+import requests
+import os
+
 # -----------------------------
 # GPIO CONFIG
 # -----------------------------
@@ -35,6 +40,17 @@ uri = "https://c-h-i-p-software.onrender.com/robot-data"
 class IntegratedMover(Node):
     def __init__(self):
         super().__init__('integrated_mover')
+
+        # Image Uploading Setup
+        self.s3 = boto3.client(
+            "s3",
+            endpoint_url="https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
+            aws_access_key_id="ACCESS_KEY",
+            aws_secret_access_key="SECRET_KEY"
+        )
+
+        self.bucket_name = "robot-images"
+        self.public_url_base = "https://your-public-domain.com"
 
         # Publisher
         self.pub = self.create_publisher(TwistStamped, '/cmd_vel', 10)
@@ -76,6 +92,35 @@ class IntegratedMover(Node):
 
         self.pub.publish(msg)
 
+
+    # -----------------------------
+    # IMAGE UPLOADING SCRIPT
+    # -----------------------------
+    def capture_and_upload(self):
+        if self.latest_color is None:
+            self.get_logger().warn("No image available yet")
+            return None
+
+    # Create filename using timestamp
+        filename = f"/tmp/{int(time.time())}.jpg"
+
+    # Save OpenCV image
+        cv2.imwrite(filename, self.latest_color, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+
+    # Upload to R2
+        key = f"robot1/{os.path.basename(filename)}"
+
+        try:
+            self.s3.upload_file(filename, self.bucket_name, key)
+        except Exception as e:
+            self.get_logger().error(f"Upload failed: {e}")
+            return None
+
+    # Build URL
+        url = f"{self.public_url_base}/{key}"
+
+        return url
+
     # -----------------------------
     # GPIO SENSOR
     # -----------------------------
@@ -114,7 +159,7 @@ class IntegratedMover(Node):
         if 0 < d < THRESHOLD and not self.sensor_active:
             self.sensor_active = True
             self.get_logger().info(f"Wall detected at {d:.2f}m → STOP + LOG")
-            self.log_to_mongo()
+            self.log_to_backend()
 
         elif d >= THRESHOLD and self.sensor_active:
             self.sensor_active = False
@@ -125,14 +170,24 @@ class IntegratedMover(Node):
     # BACKEND LOGGING (with COLOR image)
     # -----------------------------
     def log_to_backend(self):
+        if self.mongo_logged:
+            return
+
+        image_url = self.capture_and_upload()
+
         data = {
             "robot_id": "R1",
-            "battery" : 0,              # TODO: Dynamically get the battery
-            "loacation" : 0,            # TODO: Dynamically get the location
-            "image_url" : image_url
+            "battery": 0,
+            "location": 0,
+            "image_url": image_url
         }
-            
-        response = requests.post(url, json=data)
+
+        try:
+            response = requests.post(uri, json=data)
+            self.get_logger().info(f"Logged to backend: {response.status_code}")
+            self.mongo_logged = True
+        except Exception as e:
+            self.get_logger().error(f"Backend error: {e}")
 
     # -----------------------------
     # CLEANUP
