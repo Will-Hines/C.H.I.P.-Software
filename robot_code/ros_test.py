@@ -85,7 +85,7 @@ class IntegratedMover(Node):
         if value == 1 and not self.sensor_active:
             self.sensor_active = True
             self.get_logger().info("GPIO sensor triggered → STOP + LOG")
-            self.log_to_mongo()
+            self.log_to_backend()
 
         elif value == 0 and self.sensor_active:
             self.sensor_active = False
