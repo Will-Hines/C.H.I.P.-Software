@@ -7,5 +7,5 @@ load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 
-db = client["spill-detection-cluster"]            # database name
-collection = db["Test"]       # collection for robot data
+db = client["hello"]            # database name
+collection = db["hi"]       # collection for robot data
