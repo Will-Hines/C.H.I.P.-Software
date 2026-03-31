@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/robot-data")
 def receive_robot_data(data: models.RobotData):
     payload = data.dict()
-    payload["timestamp"] = datetime.now(ZoneInfo("America/New_York"))
+    # payload["timestamp"] = datetime.now(ZoneInfo("America/New_York"))
     collection.insert_one(payload)
     return {"status": "saved"}
 
