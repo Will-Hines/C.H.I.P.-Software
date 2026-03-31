@@ -18,6 +18,8 @@ import boto3
 import requests
 import os
 
+from datetime import datetime
+
 # -----------------------------
 # GPIO CONFIG
 # -----------------------------
@@ -178,7 +180,9 @@ class IntegratedMover(Node):
         data = {
             "robot_id": "R1",
             "battery": 0,
-            "location": 0,
+            "temperature": 31.2,
+            "location": "Zone A",
+            "timestamp": datetime.now(),
             "image_url": image_url
         }
 
