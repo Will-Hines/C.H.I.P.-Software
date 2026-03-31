@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from datetime import datetime
+from zoneinfo import ZoneInfo   # built-in in Python 3.9+
 from database import collection
 
-import models        # Gets data schema from models.py
+import models
 
 router = APIRouter()
 
@@ -10,7 +11,7 @@ router = APIRouter()
 @router.post("/robot-data")
 def receive_robot_data(data: models.RobotData):
     payload = data.dict()
-    payload["timestamp"] = datetime.utcnow()
+    payload["timestamp"] = datetime.now(ZoneInfo("America/New_York"))
     collection.insert_one(payload)
     return {"status": "saved"}
 
