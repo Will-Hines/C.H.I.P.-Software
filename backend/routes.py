@@ -8,7 +8,7 @@ router = APIRouter()
 
 # Endpoint for robot to POST data
 @router.post("/robot-data")
-def receive_robot_data(data: RobotData):
+def receive_robot_data(data: models.RobotData):
     payload = data.dict()
     payload["timestamp"] = datetime.utcnow()
     collection.insert_one(payload)
