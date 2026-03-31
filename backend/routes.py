@@ -1,20 +1,14 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from datetime import datetime
 from database import collection
 
-router = APIRouter()
+import models        # Gets data schema from models.py
 
-# Schema for incoming robot data
-class RobotTelemetry(BaseModel):
-    robot_id: str
-    battery: float
-    temperature: float
-    speed: float
+router = APIRouter()
 
 # Endpoint for robot to POST data
 @router.post("/robot-data")
-def receive_robot_data(data: RobotTelemetry):
+def receive_robot_data(data: RobotData):
     payload = data.dict()
     payload["timestamp"] = datetime.utcnow()
     collection.insert_one(payload)
