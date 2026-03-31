@@ -5,5 +5,5 @@ class RobotData(BaseModel):
     robot_id: str
     temperature: float
     battery: float
-    location: str
+    image_url: str
     timestamp: datetime
