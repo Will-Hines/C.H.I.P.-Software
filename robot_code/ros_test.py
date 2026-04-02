@@ -191,7 +191,7 @@ class IntegratedMover(Node):
             "battery": 0,
             "temperature": 31.2,
             "location": "Zone A",
-            "timestamp": datetime.now(),
+            "timestamp": str(datetime.now()),
             "image_url": image_url
         }
 
