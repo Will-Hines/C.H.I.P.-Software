@@ -6,8 +6,8 @@ import mapImage from "./assets/facility_map_example.png";
 function App() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
-  const [showAlert, setShowAlert] = useState(true);
   const [alertHistory, setAlertHistory] = useState([]);
+  const [dismissedAlerts, setDismissedAlerts] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -20,7 +20,34 @@ function App() {
       }
 
       const result = await response.json();
-      setData(Array.isArray(result) ? [...result].reverse() : []);
+
+      if (Array.isArray(result)) {
+        const sortedData = [...result].sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        const uniqueData = sortedData.filter((item, index, self) => {
+          const id = `${item.timestamp}-${item.robot_id}-${item.battery}`;
+          return (
+            index ===
+            self.findIndex(
+              (x) =>
+                `${x.timestamp}-${x.robot_id}-${x.battery}` === id
+            )
+          );
+        });
+
+        const filteredData = uniqueData.filter(
+          (item) =>
+            !dismissedAlerts.includes(
+              `${item.timestamp}-${item.robot_id}-${item.battery}`
+            )
+        );
+
+        setData(filteredData);
+      } else {
+        setData([]);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -34,15 +61,15 @@ function App() {
 
   const latest = data.length > 0 ? data[0] : null;
 
-  const dismissAlert = () => {
-    if (!latest) return;
+  const dismissAlert = (alertItem) => {
+    const alertId = `${alertItem.timestamp}-${alertItem.robot_id}-${alertItem.battery}`;
 
     const newAlert = {
-      id: latest.timestamp,
+      id: alertId,
       message: "Spill Detected!",
-      timestamp: latest.timestamp,
-      robot_id: latest.robot_id,
-      battery: latest.battery,
+      timestamp: alertItem.timestamp,
+      robot_id: alertItem.robot_id,
+      battery: alertItem.battery,
     };
 
     setAlertHistory((prev) => {
@@ -51,7 +78,17 @@ function App() {
       return [newAlert, ...prev];
     });
 
-    setShowAlert(false);
+    setDismissedAlerts((prev) => {
+      if (prev.includes(alertId)) return prev;
+      return [...prev, alertId];
+    });
+
+    setData((prev) =>
+      prev.filter(
+        (item) =>
+          `${item.timestamp}-${item.robot_id}-${item.battery}` !== alertId
+      )
+    );
   };
 
   return (
@@ -88,12 +125,15 @@ function App() {
 
             <h2>Current Alerts</h2>
 
-            {latest ? (
-              showAlert ? (
-                <div className="new-alert-card">
+            {data.length > 0 ? (
+              data.map((item) => (
+                <div
+                  key={`${item.timestamp}-${item.robot_id}-${item.battery}`}
+                  className="new-alert-card"
+                >
                   <span
                     className="close-alert"
-                    onClick={dismissAlert}
+                    onClick={() => dismissAlert(item)}
                     aria-label="Dismiss alert"
                     title="Dismiss"
                   >
@@ -101,13 +141,15 @@ function App() {
                   </span>
                   <strong>Spill Detected!</strong>
                   <br />
-                  Timestamp: {new Date(latest.timestamp).toLocaleString()}
+                  Timestamp: {new Date(item.timestamp).toLocaleString()}
+                  <br />
+                  Robot: {item.robot_id}
+                  <br />
+                  Battery: {item.battery}%
                 </div>
-              ) : (
-                <div className="alert-item past">No current alerts.</div>
-              )
+              ))
             ) : (
-              <div className="alert-item past">Loading alerts...</div>
+              <div className="alert-item past">No current alerts.</div>
             )}
           </div>
         )}
