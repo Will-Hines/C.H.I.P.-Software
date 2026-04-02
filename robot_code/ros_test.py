@@ -17,8 +17,17 @@ import base64
 import boto3
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from datetime import datetime
+
+# URI and API keys
+    CLOUDFLARE_ENDPOINT_URL = os.getenv("CLOUDFLARE_ENDPOINT_URL")
+    CLOUDFLARE_ACCESS_KEY = os.getenv("CLOUDFLARE_ACCESS_KEY")
+    CLOUDFLARE_SECRET_KEY = os.getenv("CLOUDFLARE_SECRET_KEY")
+    CLOUDFLARE_PUBLIC_URL = os.getenv("CLOUDFLARE_PUBLIC_URL")
 
 # -----------------------------
 # GPIO CONFIG
@@ -46,13 +55,13 @@ class IntegratedMover(Node):
         # Image Uploading Setup
         self.s3 = boto3.client(
             "s3",
-            endpoint_url="https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
-            aws_access_key_id="ACCESS_KEY",
-            aws_secret_access_key="SECRET_KEY"
+            endpoint_url = CLOUDFLARE_ENDPOINT_URL,
+            aws_access_key_id = CLOUDFLARE_ACCESS_ID,
+            aws_secret_access_key = CLOUDFLARE_SECRET_KEY
         )
 
         self.bucket_name = "robot-images"
-        self.public_url_base = "https://your-public-domain.com"
+        self.public_url_base = CLOUDFLARE_PUBLIC_URL
 
         # Publisher
         self.pub = self.create_publisher(TwistStamped, '/cmd_vel', 10)
