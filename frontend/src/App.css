@@ -58,6 +58,20 @@
   opacity: 0.7;
 }
 
+/* IMAGES */
+.alert-image {
+  width: 160px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.alert-image:hover {
+  transform: scale(1.05);
+}
+
 /* STATUS */
 .status-card {
   margin-top: 20px;

@@ -158,6 +158,14 @@ function App() {
                   Temperature: {item.temperature}°C
                   <br />
                   Location: {item.location || "Unknown"}
+                  {item.image_url && (
+                    <img
+                      src={item.image_url}
+                      alt="Current alert"
+                      className="alert-image"
+                      onClick={() => window.open(item.image_url, "_blank")}
+                    />
+                  )}
                 </div>
               ))
             ) : (
@@ -196,6 +204,14 @@ function App() {
                   Temperature: {alert.temperature}°C
                   <br />
                   Location: {alert.location || "Unknown"}
+                  {alert.image_url && (
+                    <img
+                      src={alert.image_url}
+                      alt="Alert history"
+                      className="alert-image"
+                      onClick={() => window.open(alert.image_url, "_blank")}
+                    />
+                  )}
                 </div>
               ))
             ) : (
