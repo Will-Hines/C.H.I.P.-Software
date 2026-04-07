@@ -158,6 +158,7 @@ function App() {
                   Temperature: {item.temperature}°C
                   <br />
                   Location: {item.location || "Unknown"}
+                  <br />
                   {item.image_url && (
                     <img
                       src={item.image_url}
@@ -204,6 +205,7 @@ function App() {
                   Temperature: {alert.temperature}°C
                   <br />
                   Location: {alert.location || "Unknown"}
+                  <br />
                   {alert.image_url && (
                     <img
                       src={alert.image_url}
