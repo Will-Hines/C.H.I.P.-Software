@@ -119,7 +119,7 @@ function App() {
 
             {latest ? (
               <div className="status-card">
-                <strong>Latest Robot {latest.robot_id} Status</strong>
+                <strong>Latest Robot Status</strong>
                 <br />
                 Timestamp: {new Date(latest.timestamp).toLocaleString()}
                 <br />
