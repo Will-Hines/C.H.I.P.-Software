@@ -7,16 +7,17 @@ function App() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
   const [alertHistory, setAlertHistory] = useState([]);
-  const [dismissedAlerts, setDismissedAlerts] = useState([]);
+
+  const BASE_URL = "https://c-h-i-p-software.onrender.com";
+  // for local testing use:
+  // const BASE_URL = "http://127.0.0.1:8000";
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        "https://c-h-i-p-software.onrender.com/robot-data"
-      );
+      const response = await fetch(`${BASE_URL}/robot-data`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch robot data");
+        throw new Error("Failed to fetch current alerts");
       }
 
       const result = await response.json();
@@ -25,71 +26,76 @@ function App() {
         const sortedData = [...result].sort(
           (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
         );
-
-        const uniqueData = sortedData.filter((item, index, self) => {
-          const id = `${item.timestamp}-${item.robot_id}-${item.battery}`;
-          return (
-            index ===
-            self.findIndex(
-              (x) =>
-                `${x.timestamp}-${x.robot_id}-${x.battery}` === id
-            )
-          );
-        });
-
-        const filteredData = uniqueData.filter(
-          (item) =>
-            !dismissedAlerts.includes(
-              `${item.timestamp}-${item.robot_id}-${item.battery}`
-            )
-        );
-
-        setData(filteredData);
+        setData(sortedData);
       } else {
         setData([]);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching current alerts:", error);
+      setData([]);
+    }
+  };
+
+  const fetchPreviousAlerts = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/previous-alerts`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch previous alerts");
+      }
+
+      const result = await response.json();
+
+      if (Array.isArray(result)) {
+        const sortedHistory = [...result].sort(
+          (a, b) =>
+            new Date(b.dismissed_at || b.timestamp) -
+            new Date(a.dismissed_at || a.timestamp)
+        );
+        setAlertHistory(sortedHistory);
+      } else {
+        setAlertHistory([]);
+      }
+    } catch (error) {
+      console.error("Error fetching previous alerts:", error);
+      setAlertHistory([]);
+    }
+  };
+
+  const dismissAlert = async (alertItem) => {
+    try {
+      const response = await fetch(`${BASE_URL}/dismiss-alert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ _id: alertItem._id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to dismiss alert");
+      }
+
+      await fetchData();
+      await fetchPreviousAlerts();
+    } catch (error) {
+      console.error("Error dismissing alert:", error);
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000);
+    fetchPreviousAlerts();
+
+    const interval = setInterval(() => {
+      fetchData();
+      fetchPreviousAlerts();
+    }, 3000);
+
     return () => clearInterval(interval);
   }, []);
 
   const latest = data.length > 0 ? data[0] : null;
-
-  const dismissAlert = (alertItem) => {
-    const alertId = `${alertItem.timestamp}-${alertItem.robot_id}-${alertItem.battery}`;
-
-    const newAlert = {
-      id: alertId,
-      message: "Spill Detected!",
-      timestamp: alertItem.timestamp,
-      robot_id: alertItem.robot_id,
-      battery: alertItem.battery,
-    };
-
-    setAlertHistory((prev) => {
-      const alreadyExists = prev.some((alert) => alert.id === newAlert.id);
-      if (alreadyExists) return prev;
-      return [newAlert, ...prev];
-    });
-
-    setDismissedAlerts((prev) => {
-      if (prev.includes(alertId)) return prev;
-      return [...prev, alertId];
-    });
-
-    setData((prev) =>
-      prev.filter(
-        (item) =>
-          `${item.timestamp}-${item.robot_id}-${item.battery}` !== alertId
-      )
-    );
-  };
 
   return (
     <div className="app">
@@ -118,6 +124,10 @@ function App() {
                 Timestamp: {new Date(latest.timestamp).toLocaleString()}
                 <br />
                 Battery: {latest.battery}%
+                <br />
+                Temperature: {latest.temperature}°C
+                <br />
+                Location: {latest.location || "Unknown"}
               </div>
             ) : (
               <div className="status-card">Loading robot data...</div>
@@ -127,10 +137,7 @@ function App() {
 
             {data.length > 0 ? (
               data.map((item) => (
-                <div
-                  key={`${item.timestamp}-${item.robot_id}-${item.battery}`}
-                  className="new-alert-card"
-                >
+                <div key={item._id} className="new-alert-card">
                   <span
                     className="close-alert"
                     onClick={() => dismissAlert(item)}
@@ -139,6 +146,7 @@ function App() {
                   >
                     ×
                   </span>
+
                   <strong>Spill Detected!</strong>
                   <br />
                   Timestamp: {new Date(item.timestamp).toLocaleString()}
@@ -146,6 +154,10 @@ function App() {
                   Robot: {item.robot_id}
                   <br />
                   Battery: {item.battery}%
+                  <br />
+                  Temperature: {item.temperature}°C
+                  <br />
+                  Location: {item.location || "Unknown"}
                 </div>
               ))
             ) : (
@@ -164,16 +176,26 @@ function App() {
         {activeTab === "alerts" && (
           <div>
             <h2>Alert History</h2>
+
             {alertHistory.length > 0 ? (
               alertHistory.map((alert) => (
-                <div key={alert.id} className="alert-item">
-                  <strong>{alert.message}</strong>
+                <div key={alert._id} className="alert-item">
+                  <strong>Spill Detected!</strong>
                   <br />
                   Timestamp: {new Date(alert.timestamp).toLocaleString()}
+                  <br />
+                  Dismissed:{" "}
+                  {alert.dismissed_at
+                    ? new Date(alert.dismissed_at).toLocaleString()
+                    : "Not available"}
                   <br />
                   Robot: {alert.robot_id}
                   <br />
                   Battery: {alert.battery}%
+                  <br />
+                  Temperature: {alert.temperature}°C
+                  <br />
+                  Location: {alert.location || "Unknown"}
                 </div>
               ))
             ) : (
