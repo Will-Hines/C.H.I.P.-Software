@@ -126,8 +126,6 @@ function App() {
                 Battery: {latest.battery}%
                 <br />
                 Temperature: {latest.temperature}°C
-                <br />
-                Location: {latest.location || "Unknown"}
               </div>
             ) : (
               <div className="status-card">Loading robot data...</div>
@@ -156,8 +154,6 @@ function App() {
                   Battery: {item.battery}%
                   <br />
                   Temperature: {item.temperature}°C
-                  <br />
-                  Location: {item.location || "Unknown"}
                   <br />
                   {item.image_url && (
                     <img
@@ -203,8 +199,6 @@ function App() {
                   Battery: {alert.battery}%
                   <br />
                   Temperature: {alert.temperature}°C
-                  <br />
-                  Location: {alert.location || "Unknown"}
                   <br />
                   {alert.image_url && (
                     <img
