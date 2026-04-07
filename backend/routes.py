@@ -1,24 +1,51 @@
-from fastapi import APIRouter
-from datetime import datetime
-from zoneinfo import ZoneInfo   # built-in in Python 3.9+
-from database import collection
+from fastapi import APIRouter, HTTPException
+from datetime import datetime, timezone
+from bson import ObjectId
 
+from database import current_alerts_collection, previous_alerts_collection
 import models
 
 router = APIRouter()
 
-# Endpoint for robot to POST data
 @router.post("/robot-data")
 def receive_robot_data(data: models.RobotData):
     payload = data.dict()
-    # payload["timestamp"] = datetime.now(ZoneInfo("America/New_York"))
-    collection.insert_one(payload)
+
+    if not payload.get("timestamp"):
+        payload["timestamp"] = datetime.now(timezone.utc)
+
+    current_alerts_collection.insert_one(payload)
     return {"status": "saved"}
 
-# Endpoint for frontend to GET latest data
 @router.get("/robot-data")
 def get_robot_data():
-    docs = list(collection.find().sort("timestamp", -1).limit(50))
+    docs = list(current_alerts_collection.find().sort("timestamp", -1).limit(50))
     for d in docs:
         d["_id"] = str(d["_id"])
     return docs
+
+@router.get("/previous-alerts")
+def get_previous_alerts():
+    docs = list(previous_alerts_collection.find().sort("timestamp", -1).limit(50))
+    for d in docs:
+        d["_id"] = str(d["_id"])
+    return docs
+
+@router.post("/dismiss-alert")
+def dismiss_alert(alert: dict):
+    alert_id = alert.get("_id")
+
+    if not alert_id:
+        raise HTTPException(status_code=400, detail="Missing _id")
+
+    existing_alert = current_alerts_collection.find_one({"_id": ObjectId(alert_id)})
+
+    if not existing_alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    current_alerts_collection.delete_one({"_id": ObjectId(alert_id)})
+
+    existing_alert["dismissed_at"] = datetime.now(timezone.utc)
+    previous_alerts_collection.insert_one(existing_alert)
+
+    return {"status": "moved to previous alerts"}
