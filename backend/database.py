@@ -8,4 +8,5 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 
 db = client["Robot_1"]            # database name
-collection = db["Current_Alerts"]       # collection for robot data
+current_alerts_collection = db["Current_Alerts"]
+previous_alerts_collection = db["Previous_Alerts"]
