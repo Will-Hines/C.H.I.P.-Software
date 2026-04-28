@@ -119,13 +119,12 @@ function App() {
 
             {latest ? (
               <div className="status-card">
-                <strong>Latest Robot Status</strong>
-                <br />
-                Timestamp: {new Date(latest.timestamp).toLocaleString()}
-                <br />
-                Battery: {latest.battery}%
-                <br />
-                Temperature: {latest.temperature}°C
+                <div className="title_status">Latest Robot Status</div>
+                <div><span className="label_status">Timestamp:</span> {new Date(latest.timestamp).toLocaleString()}</div>
+                <div><span className="label_status">Battery:</span> 88%</div>
+                <div><span className="label_status">Internal Temperature:</span> 55°C</div>
+                <div><span className="label_status">External Temperature:</span> 20°C</div>
+                <div><span className="label_status">Humidity:</span> 45% RH</div>
               </div>
             ) : (
               <div className="status-card">Loading robot data...</div>
@@ -145,16 +144,15 @@ function App() {
                     ×
                   </span>
 
-                  <strong>Spill Detected!</strong>
-                  <br />
-                  Timestamp: {new Date(item.timestamp).toLocaleString()}
-                  <br />
-                  Robot: {item.robot_id}
-                  <br />
-                  Battery: {item.battery}%
-                  <br />
-                  Temperature: {item.temperature}°C
-                  <br />
+                  <div className="title_status">Spill Detected!</div>
+                  <div><span className="label_status">Timestamp:</span> {new Date(item.timestamp).toLocaleString()}</div>
+                  <div><span className="label_status">Robot:</span> {item.robot_id}</div>
+                  <div><span className="label_status">Battery:</span> {item.battery}%</div>
+                  {/* Temperature: {item.temperature}°C */}
+                  <div><span className="label_status">Internal Temperature:</span> 55°C</div>
+                  <div><span className="label_status">External Temperature:</span> 20°C</div>
+                  <div><span className="label_status">Humidity:</span> 45% RH</div>
+
                   {item.image_url && (
                     <img
                       src={item.image_url}
@@ -185,7 +183,7 @@ function App() {
             {alertHistory.length > 0 ? (
               alertHistory.map((alert) => (
                 <div key={alert._id} className="alert-item">
-                  <strong>Spill Detected!</strong>
+                  {/* <strong>Spill Detected!</strong>
                   <br />
                   Timestamp: {new Date(alert.timestamp).toLocaleString()}
                   <br />
@@ -199,7 +197,17 @@ function App() {
                   Battery: {alert.battery}%
                   <br />
                   Temperature: {alert.temperature}°C
-                  <br />
+                  <br /> */}
+                  
+                  <div className="title_status">Spill Detected!</div>
+                  <div><span className="label_status">Timestamp:</span> {new Date(alert.timestamp).toLocaleString()}</div>
+                  <div><span className="label_status">Robot:</span> {alert.robot_id}</div>
+                  <div><span className="label_status">Battery:</span> {alert.battery}%</div>
+                  {/* Temperature: {item.temperature}°C */}
+                  <div><span className="label_status">Internal Temperature:</span> 55°C</div>
+                  <div><span className="label_status">External Temperature:</span> {alert.temperature}°C</div>
+                  <div><span className="label_status">Humidity:</span> 45% RH</div>
+
                   {alert.image_url && (
                     <img
                       src={alert.image_url}
